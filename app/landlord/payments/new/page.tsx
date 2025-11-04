@@ -7,7 +7,7 @@ export default async function RecordPaymentPage() {
   const session = await requireRole("LANDLORD");
 
   // Get all units for the landlord
-  const units = await prisma.unit.findMany({
+  const units = (await prisma.unit.findMany({
     where: {
       property: {
         landlordId: session.user.id,
@@ -49,7 +49,22 @@ export default async function RecordPaymentPage() {
         unitNumber: "asc",
       },
     ],
-  });
+  })) as unknown as Array<{
+    id: string;
+    unitNumber: string;
+    rentAmount: number;
+    property: {
+      address: string;
+    };
+    tenants: Array<{
+      id: string;
+      tenant: {
+        id: string;
+        name: string | null;
+        email: string;
+      };
+    }>;
+  }>;
 
   return (
     <LandlordLayout>

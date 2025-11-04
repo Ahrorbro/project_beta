@@ -10,7 +10,7 @@ export default async function TenantDashboard() {
   const session = await requireRole("TENANT");
 
   // Get tenant with unit and related data
-  const tenant = await prisma.user.findUnique({
+  const tenant = (await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
       tenantUnits: {
@@ -45,7 +45,41 @@ export default async function TenantDashboard() {
         take: 1,
       },
     },
-  });
+  })) as unknown as {
+    id: string;
+    email: string;
+    name: string | null;
+    tenantUnits: Array<{
+      unit: {
+        id: string;
+        unitNumber: string;
+        rentAmount: number;
+        floor: number | null;
+        leaseStartDate: Date | null;
+        leaseEndDate: Date | null;
+        property: {
+          address: string;
+        };
+      };
+    }>;
+    payments: Array<{
+      id: string;
+      amount: number;
+      dueDate: Date;
+      status: string;
+    }>;
+    maintenanceRequests: Array<{
+      id: string;
+      title: string;
+      status: string;
+      createdAt: Date;
+    }>;
+    leaseAgreements: Array<{
+      id: string;
+      startDate: Date;
+      endDate: Date;
+    }>;
+  } | null;
 
   if (!tenant || !tenant.tenantUnits || tenant.tenantUnits.length === 0) {
     return (

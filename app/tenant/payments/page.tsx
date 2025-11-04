@@ -16,7 +16,7 @@ interface PaymentsPageProps {
 export default async function TenantPaymentsPage({ searchParams }: PaymentsPageProps) {
   const session = await requireRole("TENANT");
 
-  const tenant = await prisma.user.findUnique({
+  const tenant = (await prisma.user.findUnique({
     where: { id: session.user.id },
     include: {
       tenantUnits: {
@@ -40,7 +40,24 @@ export default async function TenantPaymentsPage({ searchParams }: PaymentsPageP
         where: searchParams.filter === "overdue" ? { status: "OVERDUE" } : undefined,
       },
     },
-  });
+  })) as unknown as {
+    id: string;
+    tenantUnits: Array<{
+      unit: {
+        property: {
+          address: string;
+        };
+      };
+    }>;
+    payments: Array<{
+      id: string;
+      amount: number;
+      dueDate: Date;
+      paidDate: Date | null;
+      status: string;
+      createdAt: Date;
+    }>;
+  } | null;
 
   if (!tenant || !tenant.tenantUnits || tenant.tenantUnits.length === 0) {
     return (

@@ -18,7 +18,7 @@ interface PropertyDetailPageProps {
 export default async function PropertyDetailPage({ params }: PropertyDetailPageProps) {
   const session = await requireRole("LANDLORD");
 
-  const property = await prisma.property.findFirst({
+  const property = (await prisma.property.findFirst({
     where: {
       id: params.id,
       landlordId: session.user.id,
@@ -53,7 +53,32 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
         ],
       },
     },
-  });
+  })) as unknown as {
+    id: string;
+    address: string;
+    propertyType: string;
+    description: string | null;
+    units: Array<{
+      id: string;
+      unitNumber: string;
+      rentAmount: number;
+      isOccupied: boolean;
+      floor: number | null;
+      invitationToken: string;
+      tenants: Array<{
+        id: string;
+        tenant: {
+          id: string;
+          name: string | null;
+          email: string;
+        };
+      }>;
+      _count: {
+        payments: number;
+        maintenanceRequests: number;
+      };
+    }>;
+  } | null;
 
   if (!property) {
     notFound();

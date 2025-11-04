@@ -16,7 +16,7 @@ interface MaintenancePageProps {
 export default async function LandlordMaintenancePage({ searchParams }: MaintenancePageProps) {
   const session = await requireRole("LANDLORD");
 
-  const requests = await prisma.maintenanceRequest.findMany({
+  const requests = (await prisma.maintenanceRequest.findMany({
     where: {
       unit: {
         property: {
@@ -47,7 +47,25 @@ export default async function LandlordMaintenancePage({ searchParams }: Maintena
       },
     },
     orderBy: { createdAt: "desc" },
-  });
+  })) as unknown as Array<{
+    id: string;
+    title: string;
+    description: string;
+    status: string;
+    photos: string[];
+    createdAt: Date;
+    unit: {
+      unitNumber: string;
+      property: {
+        address: string;
+      };
+    };
+    tenant: {
+      name: string | null;
+      email: string;
+      phone: string | null;
+    };
+  }>;
 
   const pendingRequests = requests.filter(
     (r: typeof requests[0]) => r.status === "SUBMITTED" || r.status === "IN_PROGRESS"
