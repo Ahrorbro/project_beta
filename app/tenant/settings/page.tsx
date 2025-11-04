@@ -4,6 +4,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { prisma } from "@/lib/prisma";
 import { User, Mail, Phone, Shield } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { JoinApartmentForm } from "@/components/tenant/JoinApartmentForm";
 
 export default async function TenantSettingsPage() {
   const session = await requireRole("TENANT");
@@ -101,6 +102,9 @@ export default async function TenantSettingsPage() {
             </div>
           </GlassCard>
         </div>
+
+        {/* Join Apartment Section */}
+        <JoinApartmentForm />
       </div>
     </TenantLayout>
   );

@@ -33,13 +33,18 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     include: {
       units: {
         include: {
-          tenant: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              phone: true,
+          tenants: {
+            include: {
+              tenant: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  phone: true,
+                },
+              },
             },
+            orderBy: { createdAt: "asc" },
           },
           _count: {
             select: {
@@ -63,7 +68,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
 
   // Calculate stats
   const totalUnits = property.units.length;
-  const occupiedUnits = property.units.filter((unit) => unit.tenant !== null).length;
+  const occupiedUnits = property.units.filter((unit) => unit.tenants && unit.tenants.length > 0).length;
   const totalRent = property.units.reduce((sum, unit) => sum + unit.rentAmount, 0);
   const totalPayments = property.units.reduce(
     (sum, unit) => sum + unit._count.payments,
@@ -184,10 +189,12 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                           <CreditCard className="w-4 h-4 text-white/60" />
                           <span className="text-white/80">Rent: {formatCurrency(unit.rentAmount)}</span>
                         </div>
-                        {unit.tenant ? (
+                        {unit.tenants && unit.tenants.length > 0 ? (
                           <div className="flex items-center gap-2 text-sm">
                             <Users className="w-4 h-4 text-green-400" />
-                            <span className="text-green-400">Occupied by: {unit.tenant.name || unit.tenant.email}</span>
+                            <span className="text-green-400">
+                              Occupied by: {unit.tenants.map((ut) => ut.tenant.name || ut.tenant.email).join(", ")}
+                            </span>
                           </div>
                         ) : (
                           <div className="flex items-center gap-2 text-sm">
@@ -207,11 +214,11 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                     </div>
                     <div className="flex flex-col gap-2 text-right">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium border ${
-                        unit.tenant 
+                        unit.tenants && unit.tenants.length > 0 
                           ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/30"
                           : "bg-white/10 text-white/60 border-white/20"
                       }`}>
-                        {unit.tenant ? "Occupied" : "Vacant"}
+                        {unit.tenants && unit.tenants.length > 0 ? "Occupied" : "Vacant"}
                       </span>
                       <div className="text-xs text-white/60">
                         <div>{unit._count.payments} payments</div>
@@ -219,13 +226,17 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                       </div>
                     </div>
                   </div>
-                  {unit.tenant && (
+                  {unit.tenants && unit.tenants.length > 0 && (
                     <div className="mt-4 pt-4 border-t border-white/10">
                       <h4 className="text-sm font-medium text-white mb-2">Tenant Details</h4>
                       <div className="space-y-1 text-sm text-white/80">
-                        <p>Name: {unit.tenant.name || "N/A"}</p>
-                        <p>Email: {unit.tenant.email}</p>
-                        {unit.tenant.phone && <p>Phone: {unit.tenant.phone}</p>}
+                        {unit.tenants.map((ut) => (
+                          <div key={ut.tenant.id} className="space-y-1">
+                            <p>Name: {ut.tenant.name || "N/A"}</p>
+                            <p>Email: {ut.tenant.email}</p>
+                            {ut.tenant.phone && <p>Phone: {ut.tenant.phone}</p>}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   )}

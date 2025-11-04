@@ -151,7 +151,7 @@ export function RecordPaymentForm({ units }: RecordPaymentFormProps) {
             {units.map((unit) => (
               <option key={unit.id} value={unit.id}>
                 {unit.property.address} - Unit {unit.unitNumber}
-                {unit.tenant && ` (${unit.tenant.name || unit.tenant.email})`}
+                {unit.tenants && unit.tenants.length > 0 && ` (${unit.tenants[0].tenant.name || unit.tenants[0].tenant.email})`}
               </option>
             ))}
           </select>

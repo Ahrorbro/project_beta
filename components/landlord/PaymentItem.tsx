@@ -6,12 +6,14 @@ import { DollarSign, Calendar, Edit2, X } from "lucide-react";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { EditPaymentForm } from "./EditPaymentForm";
 
+import { PaymentStatus } from "@prisma/client";
+
 interface Payment {
   id: string;
   amount: number;
   dueDate: Date | string;
   paidDate: Date | string | null;
-  status: "PENDING" | "PAID" | "OVERDUE";
+  status: PaymentStatus;
   editedAt?: Date | string | null;
   unit: {
     unitNumber: string;
@@ -91,6 +93,8 @@ export function PaymentItem({ payment }: PaymentItemProps) {
               payment.status === "PAID"
                 ? "bg-green-500/20 text-green-300 border border-green-500/30"
                 : payment.status === "OVERDUE"
+                ? "bg-red-500/20 text-red-300 border border-red-500/30"
+                : payment.status === "FAILED"
                 ? "bg-red-500/20 text-red-300 border border-red-500/30"
                 : "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30"
             }`}

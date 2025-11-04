@@ -29,6 +29,7 @@ interface InviteLandingPageProps {
   unit: {
     id: string;
     unitNumber: string;
+    isOccupied: boolean;
     property: {
       address: string;
     };

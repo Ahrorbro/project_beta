@@ -3,6 +3,7 @@ import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { prisma } from "@/lib/prisma";
 import { Users, Building2, CreditCard, TrendingUp } from "lucide-react";
+import { BackfillUnitTenantsButton } from "@/components/admin/BackfillUnitTenantsButton";
 
 export default async function AdminDashboard() {
   await requireRole("SUPER_ADMIN");
@@ -101,6 +102,9 @@ export default async function AdminDashboard() {
             >
               View Analytics
             </a>
+          </div>
+          <div className="mt-6">
+            <BackfillUnitTenantsButton />
           </div>
         </GlassCard>
       </div>

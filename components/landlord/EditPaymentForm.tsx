@@ -8,13 +8,14 @@ import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import { DollarSign, Calendar, Edit2, X, Gift } from "lucide-react";
 import toast from "react-hot-toast";
 import { formatCurrency, formatDateInput } from "@/lib/utils";
+import { PaymentStatus } from "@prisma/client";
 
 interface Payment {
   id: string;
   amount: number;
   dueDate: Date | string;
   paidDate: Date | string | null;
-  status: "PENDING" | "PAID" | "OVERDUE";
+  status: PaymentStatus;
   unit: {
     unitNumber: string;
     rentAmount?: number;
@@ -247,7 +248,7 @@ export function EditPaymentForm({ payment, onSuccess, onCancel }: EditPaymentFor
             onChange={(e) =>
               setFormData({
                 ...formData,
-                status: e.target.value as "PENDING" | "PAID" | "OVERDUE",
+                status: e.target.value as PaymentStatus,
               })
             }
             className="glass-input w-full"
@@ -256,6 +257,7 @@ export function EditPaymentForm({ payment, onSuccess, onCancel }: EditPaymentFor
             <option value="PENDING">Pending</option>
             <option value="PAID">Paid</option>
             <option value="OVERDUE">Overdue</option>
+            <option value="FAILED">Failed</option>
           </select>
         </div>
 
