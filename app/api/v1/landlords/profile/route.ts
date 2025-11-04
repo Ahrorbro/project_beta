@@ -8,6 +8,8 @@ const profileSchema = z.object({
   phone: z.string().optional(),
 });
 
+export const dynamic = "force-dynamic";
+
 export async function PATCH(request: NextRequest) {
   try {
     const session = await auth();

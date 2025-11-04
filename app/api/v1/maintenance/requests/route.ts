@@ -10,6 +10,8 @@ const maintenanceRequestSchema = z.object({
   photos: z.array(z.string()).min(1),
 });
 
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   try {
     const session = await auth();

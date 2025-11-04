@@ -15,6 +15,8 @@ interface RouteParams {
   };
 }
 
+export const dynamic = "force-dynamic";
+
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth();
