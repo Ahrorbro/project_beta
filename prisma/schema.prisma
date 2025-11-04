@@ -1,0 +1,233 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  LANDLORD
+  TENANT
+}
+
+enum SubscriptionPlan {
+  FREE_TRIAL
+  BASIC
+  PRO
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  INACTIVE
+  CANCELLED
+  EXPIRED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  OVERDUE
+  FAILED
+}
+
+enum MaintenanceStatus {
+  SUBMITTED
+  IN_PROGRESS
+  RESOLVED
+}
+
+enum TransactionStatus {
+  SUCCESS
+  INPROGRESS
+  AMBIGUOUS
+  FAIL
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  name          String?
+  phone         String?
+  role          UserRole  @default(TENANT)
+  profileImage  String?
+  
+  // Landlord specific
+  landlordProfileComplete Boolean @default(false)
+  createdAtBy            String? // Super Admin ID who created this landlord
+  
+  // Tenant specific
+  tenantProfileComplete Boolean @default(false)
+  
+  // Relationships
+  landlordProperties    Property[]           @relation("LandlordProperties")
+  tenantUnits          UnitTenant[]         @relation("TenantUnits") // Many-to-many with units
+  subscription          Subscription?
+  payments              Payment[]
+  maintenanceRequests   MaintenanceRequest[]
+  leaseAgreements       LeaseAgreement[]
+  auditLogs             AuditLog[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Property {
+  id          String   @id @default(cuid())
+  address     String
+  propertyType String // "single" or "multi"
+  description String?
+  landlordId  String
+  
+  // Relationships
+  landlord    User   @relation("LandlordProperties", fields: [landlordId], references: [id])
+  units       Unit[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Unit {
+  id              String   @id @default(cuid())
+  propertyId      String
+  unitNumber      String   // e.g., "1A", "1B", "2A"
+  floor           Int?
+  rentAmount      Float
+  leaseStartDate  DateTime?
+  leaseEndDate    DateTime?
+  invitationToken String   @unique // Unique token for invitation link
+  isOccupied      Boolean  @default(false)
+  
+  // Relationships
+  property          Property            @relation(fields: [propertyId], references: [id])
+  tenants           UnitTenant[]        // Many-to-many with tenants
+  payments          Payment[]
+  maintenanceRequests MaintenanceRequest[]
+  leaseAgreements   LeaseAgreement[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Join table for many-to-many relationship between Unit and Tenant
+model UnitTenant {
+  id        String   @id @default(cuid())
+  unitId    String
+  tenantId  String
+  
+  // Relationships
+  unit      Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  tenant    User     @relation("TenantUnits", fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([unitId, tenantId]) // Prevent duplicate assignments
+  @@index([unitId])
+  @@index([tenantId])
+}
+
+model Subscription {
+  id              String            @id @default(cuid())
+  userId          String            @unique
+  plan            SubscriptionPlan  @default(FREE_TRIAL)
+  status          SubscriptionStatus @default(ACTIVE)
+  trialStartDate  DateTime?
+  trialEndDate    DateTime?
+  billingCycleStart DateTime?
+  billingCycleEnd   DateTime?
+  nextBillingDate  DateTime?
+  membershipPaid  Boolean           @default(false)
+  membershipPaymentDate DateTime?
+  membershipAmount Float            @default(80.00) // $80 USD
+  
+  // Relationships
+  user            User     @relation(fields: [userId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Payment {
+  id                String        @id @default(cuid())
+  unitId            String
+  tenantId          String
+  amount            Float
+  dueDate           DateTime
+  paidDate          DateTime?
+  status            PaymentStatus @default(PENDING)
+  editedAt          DateTime?     // Track when payment was edited
+  
+  // Selcom integration
+  transactionId    String?       @unique
+  selcomReference  String?
+  selcomResultCode String?
+  transactionStatus TransactionStatus?
+  receiptUrl       String?
+  
+  // Relationships
+  unit              Unit          @relation(fields: [unitId], references: [id])
+  tenant            User          @relation(fields: [tenantId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model MaintenanceRequest {
+  id          String            @id @default(cuid())
+  unitId      String
+  tenantId    String
+  title       String
+  description String
+  photos      String[]          // Array of photo URLs
+  status      MaintenanceStatus @default(SUBMITTED)
+  resolutionNotes String?
+  resolutionPhotos String[]     // Landlord's resolution photos
+  
+  // Relationships
+  unit              Unit          @relation(fields: [unitId], references: [id])
+  tenant            User          @relation(fields: [tenantId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  resolvedAt  DateTime?
+}
+
+model LeaseAgreement {
+  id          String   @id @default(cuid())
+  unitId      String
+  tenantId    String
+  documentUrl String   // PDF or image URL
+  startDate   DateTime
+  endDate     DateTime
+  
+  // Relationships
+  unit              Unit          @relation(fields: [unitId], references: [id])
+  tenant            User          @relation(fields: [tenantId], references: [id])
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  userId      String
+  action      String   // e.g., "CREATE_PROPERTY", "UPDATE_PAYMENT", "DELETE_TENANT"
+  entityType  String   // e.g., "Property", "Payment", "User"
+  entityId    String
+  details     Json?    // Additional details about the action
+  ipAddress   String?
+  userAgent   String?
+  
+  // Relationships
+  user            User          @relation(fields: [userId], references: [id])
+  
+  createdAt   DateTime @default(now())
+}
+
