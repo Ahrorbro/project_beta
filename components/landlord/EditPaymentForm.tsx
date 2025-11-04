@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
 import { GlassInput } from "@/components/ui/GlassInput";
@@ -47,7 +47,7 @@ export function EditPaymentForm({ payment, onSuccess, onCancel }: EditPaymentFor
   });
 
   // Calculate 6 months payment with 15% discount
-  const calculateSixMonthsPayment = () => {
+  const calculateSixMonthsPayment = useCallback(() => {
     const monthlyRent = parseFloat(formData.monthlyRent) || 0;
     if (monthlyRent === 0) return { original: 0, discounted: 0, savings: 0 };
     const sixMonthsOriginal = monthlyRent * 6;
@@ -58,7 +58,7 @@ export function EditPaymentForm({ payment, onSuccess, onCancel }: EditPaymentFor
       discounted: sixMonthsDiscounted,
       savings: discount,
     };
-  };
+  }, [formData.monthlyRent]);
 
   // Update amount when 6 months checkbox is checked
   useEffect(() => {
@@ -76,7 +76,7 @@ export function EditPaymentForm({ payment, onSuccess, onCancel }: EditPaymentFor
         amount: formData.monthlyRent,
       }));
     }
-  }, [formData.isSixMonths, formData.monthlyRent]);
+  }, [formData.isSixMonths, formData.monthlyRent, calculateSixMonthsPayment]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

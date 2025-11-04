@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
@@ -54,7 +54,7 @@ export function RecordPaymentForm({ units }: RecordPaymentFormProps) {
   const selectedUnit = units.find((u) => u.id === formData.unitId);
 
   // Calculate 6 months payment with 15% discount
-  const calculateSixMonthsPayment = () => {
+  const calculateSixMonthsPayment = useCallback(() => {
     if (!selectedUnit) return { original: 0, discounted: 0, savings: 0 };
     const monthlyRent = selectedUnit.rentAmount;
     const sixMonthsOriginal = monthlyRent * 6;
@@ -65,7 +65,7 @@ export function RecordPaymentForm({ units }: RecordPaymentFormProps) {
       discounted: sixMonthsDiscounted,
       savings: discount,
     };
-  };
+  }, [selectedUnit]);
 
   // Update amount when payment type or unit changes
   useEffect(() => {
@@ -86,7 +86,7 @@ export function RecordPaymentForm({ units }: RecordPaymentFormProps) {
         amount: "",
       }));
     }
-  }, [formData.paymentType, formData.unitId, selectedUnit?.rentAmount]);
+  }, [formData.paymentType, formData.unitId, selectedUnit, calculateSixMonthsPayment]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
