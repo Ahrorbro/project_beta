@@ -9,7 +9,7 @@
     "clean": "rm -rf .next",
     "cache:check": "node scripts/check-cache.js",
     "cache:size": "du -sh .next 2>/dev/null || echo 'No cache found'",
-    "build": "DATABASE_URL='postgresql://user:pass@localhost:5432/db' prisma generate --schema=./prisma/schema.prisma && DATABASE_URL='postgresql://user:pass@localhost:5432/db' next build",
+    "build": "export DATABASE_URL='postgresql://user:pass@localhost:5432/db' && prisma generate --schema=./prisma/schema.prisma && export DATABASE_URL='postgresql://user:pass@localhost:5432/db' && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "DATABASE_URL='postgresql://user:pass@localhost:5432/db' prisma generate --schema=./prisma/schema.prisma",
