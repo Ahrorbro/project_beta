@@ -7,6 +7,12 @@ import { prismaQuery as prisma } from "./prisma";
 const SUPER_ADMIN_EMAIL = "ahrorbek@rentify.com";
 const SUPER_ADMIN_PASSWORD = "ahrorbek";
 
+// Validate required environment variables
+if (!process.env.NEXTAUTH_SECRET) {
+  console.error('NEXTAUTH_SECRET is not set!');
+  throw new Error('NEXTAUTH_SECRET environment variable is missing. Please set it in Vercel Settings → Environment Variables');
+}
+
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({

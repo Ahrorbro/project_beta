@@ -7,27 +7,43 @@ const isUsingAccelerate = process.env.DATABASE_URL?.startsWith('prisma+postgres:
                           process.env.DATABASE_URL?.startsWith('prisma+postgresql://');
 
 const createPrismaClient = () => {
+  // Check if DATABASE_URL is set
+  if (!process.env.DATABASE_URL) {
+    console.error('DATABASE_URL is not set!');
+    throw new Error('DATABASE_URL environment variable is missing. Please set it in Vercel Settings → Environment Variables');
+  }
+
   const PrismaClientConstructor = isUsingAccelerate ? PrismaClientEdge : PrismaClientRegular;
   
   // For Accelerate edge client, don't pass datasources - let Prisma read from env directly
   // This avoids schema validation issues with prisma+postgres:// protocol
   if (isUsingAccelerate) {
     // Edge client with Accelerate - no datasources config needed
-    const client = new PrismaClientConstructor({
-      log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-    });
-    return client.$extends(withAccelerate());
+    try {
+      const client = new PrismaClientConstructor({
+        log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+      });
+      return client.$extends(withAccelerate());
+    } catch (error: any) {
+      console.error('Failed to create Prisma Accelerate client:', error);
+      throw new Error(`Prisma Client initialization failed: ${error.message}`);
+    }
   } else {
     // Regular client for local development
-    const client = new PrismaClientConstructor({
-      log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-      datasources: {
-        db: {
-          url: process.env.DATABASE_URL,
+    try {
+      const client = new PrismaClientConstructor({
+        log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+        datasources: {
+          db: {
+            url: process.env.DATABASE_URL,
+          },
         },
-      },
-    });
-    return client;
+      });
+      return client;
+    } catch (error: any) {
+      console.error('Failed to create Prisma client:', error);
+      throw new Error(`Prisma Client initialization failed: ${error.message}`);
+    }
   }
 }
 
