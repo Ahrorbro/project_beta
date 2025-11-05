@@ -9,14 +9,20 @@ const isUsingAccelerate = process.env.DATABASE_URL?.startsWith('prisma+postgres:
 const createPrismaClient = () => {
   const PrismaClientConstructor = isUsingAccelerate ? PrismaClientEdge : PrismaClientRegular;
   
-  const client = new PrismaClientConstructor({
-    log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
-    datasources: {
-      db: {
-        url: process.env.DATABASE_URL,
-      },
-    },
-  });
+  // For Accelerate, don't pass datasources - let Prisma read from env directly
+  // This avoids schema validation issues with prisma+postgres:// protocol
+  const client = isUsingAccelerate
+    ? new PrismaClientConstructor({
+        log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+      })
+    : new PrismaClientConstructor({
+        log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
+        datasources: {
+          db: {
+            url: process.env.DATABASE_URL,
+          },
+        },
+      });
   
   // Only use Accelerate extension if using Accelerate URL
   return isUsingAccelerate ? client.$extends(withAccelerate()) : client;
