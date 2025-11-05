@@ -1,4 +1,6 @@
 {
-  "buildCommand": "export DATABASE_URL='postgresql://user:pass@localhost:5432/db' && npm run build"
+  "buildCommand": "DATABASE_URL='postgresql://user:pass@localhost:5432/db' npm run build",
+  "installCommand": "npm install"
 }
+
 
