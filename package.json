@@ -3,7 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "node scripts/check-cache.js && next dev",
+    "dev:fast": "next dev",
+    "dev:clean": "rm -rf .next && next dev",
+    "clean": "rm -rf .next",
+    "cache:check": "node scripts/check-cache.js",
+    "cache:size": "du -sh .next 2>/dev/null || echo 'No cache found'",
     "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",

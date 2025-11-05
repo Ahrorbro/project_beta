@@ -2,7 +2,7 @@ import { requireRole } from "@/lib/middleware";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery } from "@/lib/prisma";
 import Link from "next/link";
 import { Plus, Mail, User, Calendar } from "lucide-react";
 import { formatDate } from "@/lib/utils";
@@ -10,7 +10,7 @@ import { formatDate } from "@/lib/utils";
 export default async function LandlordsPage() {
   await requireRole("SUPER_ADMIN");
 
-  const landlords = await prisma.user.findMany({
+  const landlords = await prismaQuery.user.findMany({
     where: { role: "LANDLORD" },
     include: {
       subscription: true,

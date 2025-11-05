@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/middleware";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery } from "@/lib/prisma";
 import { Users, Building2, CreditCard, TrendingUp } from "lucide-react";
 import { BackfillUnitTenantsButton } from "@/components/admin/BackfillUnitTenantsButton";
 
@@ -15,10 +15,10 @@ export default async function AdminDashboard() {
     totalProperties,
     totalPayments,
   ] = await Promise.all([
-    prisma.user.count({ where: { role: "LANDLORD" } }),
-    prisma.user.count({ where: { role: "TENANT" } }),
-    prisma.property.count(),
-    prisma.payment.count(),
+    prismaQuery.user.count({ where: { role: "LANDLORD" } }),
+    prismaQuery.user.count({ where: { role: "TENANT" } }),
+    prismaQuery.property.count(),
+    prismaQuery.payment.count(),
   ]);
 
   const stats = [

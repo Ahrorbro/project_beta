@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/middleware";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Building2, MapPin, Users, CreditCard, Wrench, Calendar } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/utils";
@@ -18,7 +18,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
   await requireRole("SUPER_ADMIN");
 
   // Verify landlord exists
-  const landlord = await prisma.user.findUnique({
+  const landlord = await prismaQuery.user.findUnique({
     where: { id: params.id, role: "LANDLORD" },
     select: { id: true, name: true, email: true },
   });
@@ -28,7 +28,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
   }
 
   // Get property with all details
-  const property = await prisma.property.findUnique({
+  const property = await prismaQuery.property.findUnique({
     where: { id: params.propertyId },
     include: {
       units: {

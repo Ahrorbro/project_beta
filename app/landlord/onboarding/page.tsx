@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/middleware";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery as prisma } from "@/lib/prisma";
 import { LandlordOnboardingForm } from "@/components/landlord/LandlordOnboardingForm";
 
 export default async function LandlordOnboardingPage() {

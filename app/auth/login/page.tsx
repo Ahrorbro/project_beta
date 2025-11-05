@@ -52,7 +52,7 @@ export default function LoginPage() {
         toast.success("Login successful!");
         
         // Wait for session to be established
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         // Fetch session to get user role
         try {
@@ -81,7 +81,6 @@ export default function LoginPage() {
             router.refresh();
           }
         } catch (sessionError) {
-          console.error("Session fetch error:", sessionError);
           // Fallback: refresh and let useEffect handle redirect
           router.refresh();
         }
@@ -90,7 +89,6 @@ export default function LoginPage() {
       }
     } catch (error) {
       toast.error("An error occurred. Please try again.");
-      console.error("Login error:", error);
     } finally {
       setIsLoading(false);
     }

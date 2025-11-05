@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/middleware";
 import { LandlordLayout } from "@/components/layouts/LandlordLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery as prisma } from "@/lib/prisma";
 import { User, Mail, Phone, Shield, Building2, CreditCard } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 

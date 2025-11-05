@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/middleware";
 import { TenantLayout } from "@/components/layouts/TenantLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery as prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Wrench, Calendar, Image as ImageIcon, CheckCircle } from "lucide-react";
 import { formatDate } from "@/lib/utils";

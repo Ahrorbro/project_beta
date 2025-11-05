@@ -1,14 +1,14 @@
 import { requireRole } from "@/lib/middleware";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery } from "@/lib/prisma";
 import { Users, Mail, Phone, Calendar, Building2 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
 export default async function TenantsAdminPage() {
   await requireRole("SUPER_ADMIN");
 
-  const tenants = await prisma.user.findMany({
+  const tenants = await prismaQuery.user.findMany({
     where: { role: "TENANT" },
     include: {
       tenantUnits: {

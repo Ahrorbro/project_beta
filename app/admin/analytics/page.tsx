@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/middleware";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery } from "@/lib/prisma";
 import { TrendingUp, Users, Building2, CreditCard, DollarSign } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
@@ -19,19 +19,19 @@ export default async function AdminAnalyticsPage() {
     activeSubscriptions,
     overduePayments,
   ] = await Promise.all([
-    prisma.user.count({ where: { role: "LANDLORD" } }),
-    prisma.user.count({ where: { role: "TENANT" } }),
-    prisma.property.count(),
-    prisma.unit.count(),
-    prisma.payment.count(),
-    prisma.payment.aggregate({
+    prismaQuery.user.count({ where: { role: "LANDLORD" } }),
+    prismaQuery.user.count({ where: { role: "TENANT" } }),
+    prismaQuery.property.count(),
+    prismaQuery.unit.count(),
+    prismaQuery.payment.count(),
+    prismaQuery.payment.aggregate({
       where: { status: "PAID" },
       _sum: { amount: true },
     }),
-    prisma.subscription.count({
+    prismaQuery.subscription.count({
       where: { status: "ACTIVE" },
     }),
-    prisma.payment.count({
+    prismaQuery.payment.count({
       where: { status: "OVERDUE" },
     }),
   ]);

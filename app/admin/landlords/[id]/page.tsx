@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/middleware";
 import { AdminLayout } from "@/components/layouts/AdminLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { User, Mail, Phone, Calendar, Building2, CreditCard } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/utils";
@@ -18,7 +18,7 @@ interface LandlordDetailPageProps {
 export default async function LandlordDetailPage({ params }: LandlordDetailPageProps) {
   await requireRole("SUPER_ADMIN");
 
-  const landlord = await prisma.user.findUnique({
+  const landlord = await prismaQuery.user.findUnique({
     where: { id: params.id, role: "LANDLORD" },
     include: {
       subscription: {
@@ -54,7 +54,7 @@ export default async function LandlordDetailPage({ params }: LandlordDetailPageP
 
   // Get landlord activity stats and payments
   const [totalPayments, totalMaintenanceRequests, payments] = await Promise.all([
-    prisma.payment.count({
+    prismaQuery.payment.count({
       where: {
         unit: {
           property: {
@@ -63,7 +63,7 @@ export default async function LandlordDetailPage({ params }: LandlordDetailPageP
         },
       },
     }),
-    prisma.maintenanceRequest.count({
+    prismaQuery.maintenanceRequest.count({
       where: {
         unit: {
           property: {
@@ -72,7 +72,7 @@ export default async function LandlordDetailPage({ params }: LandlordDetailPageP
         },
       },
     }),
-    prisma.payment.findMany({
+    prismaQuery.payment.findMany({
       where: {
         unit: {
           property: {
@@ -218,9 +218,20 @@ export default async function LandlordDetailPage({ params }: LandlordDetailPageP
               </Link>
             </div>
             <div className="space-y-4">
-              {payments.map((payment: typeof payments[0]) => (
-                <PaymentItem key={payment.id} payment={payment} />
-              ))}
+              {payments.map((payment) => {
+                const paymentForComponent = {
+                  ...payment,
+                  dueDate: payment.dueDate instanceof Date ? payment.dueDate : new Date(payment.dueDate),
+                  paidDate: payment.paidDate ? (payment.paidDate instanceof Date ? payment.paidDate : new Date(payment.paidDate)) : null,
+                  editedAt: payment.editedAt ? (payment.editedAt instanceof Date ? payment.editedAt : new Date(payment.editedAt)) : null,
+                  unit: {
+                    ...payment.unit,
+                    unitNumber: payment.unit.unitNumber || "N/A",
+                    rentAmount: payment.unit.rentAmount || 0,
+                  },
+                };
+                return <PaymentItem key={payment.id} payment={paymentForComponent} />;
+              })}
             </div>
           </GlassCard>
         )}

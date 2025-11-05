@@ -1,7 +1,7 @@
 import { requireRole } from "@/lib/middleware";
 import { LandlordLayout } from "@/components/layouts/LandlordLayout";
 import { RecordPaymentForm } from "@/components/landlord/RecordPaymentForm";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery as prisma } from "@/lib/prisma";
 
 export default async function RecordPaymentPage() {
   const session = await requireRole("LANDLORD");

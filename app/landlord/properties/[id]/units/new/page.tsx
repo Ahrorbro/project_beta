@@ -1,6 +1,6 @@
 import { requireRole } from "@/lib/middleware";
 import { LandlordLayout } from "@/components/layouts/LandlordLayout";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery as prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { CreateUnitForm } from "@/components/landlord/CreateUnitForm";
 

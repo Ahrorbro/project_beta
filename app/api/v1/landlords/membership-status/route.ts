@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery as prisma } from "@/lib/prisma";
 import { hasActiveAccess, isTrialExpired, getTrialDaysRemaining } from "@/lib/subscription";
 
 export const dynamic = "force-dynamic";

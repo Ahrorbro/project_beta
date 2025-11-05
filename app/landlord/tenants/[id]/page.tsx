@@ -2,7 +2,7 @@ import { requireRole } from "@/lib/middleware";
 import { LandlordLayout } from "@/components/layouts/LandlordLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery as prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Users, Mail, Phone, Building2, CreditCard, Wrench, FileText } from "lucide-react";
 import { formatDate, formatCurrency } from "@/lib/utils";

@@ -2,7 +2,7 @@ import { requireRole } from "@/lib/middleware";
 import { TenantLayout } from "@/components/layouts/TenantLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { GlassButton } from "@/components/ui/GlassButton";
-import { prisma } from "@/lib/prisma";
+import { prismaQuery as prisma } from "@/lib/prisma";
 import { Wrench, Plus, Clock, CheckCircle, XCircle } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";

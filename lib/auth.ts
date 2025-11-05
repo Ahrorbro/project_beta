@@ -1,7 +1,7 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
-import { prisma } from "./prisma";
+import { prismaQuery as prisma } from "./prisma";
 
 // Super Admin hardcoded credentials
 const SUPER_ADMIN_EMAIL = "ahrorbek@rentify.com";
@@ -56,7 +56,6 @@ export const authOptions: NextAuthOptions = {
           });
 
           if (!user) {
-            console.error(`User not found: ${credentials.email}`);
             throw new Error("Invalid email or password");
           }
 
@@ -67,7 +66,6 @@ export const authOptions: NextAuthOptions = {
           );
 
           if (!isValidPassword) {
-            console.error(`Invalid password for user: ${credentials.email}`);
             throw new Error("Invalid email or password");
           }
 
@@ -77,9 +75,21 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             role: user.role,
           };
-        } catch (error) {
+        } catch (error: any) {
           console.error("Auth error:", error);
-          throw error;
+          // Provide more specific error messages
+          if (error?.code === "P1001" || error?.message?.includes("connect") || error?.message?.includes("timeout")) {
+            console.error("Database connection error details:", {
+              code: error?.code,
+              message: error?.message,
+              DATABASE_URL: process.env.DATABASE_URL ? "Set" : "Missing"
+            });
+            throw new Error("Database connection failed. Please check your database configuration.");
+          }
+          if (error?.code === "P2025") {
+            throw new Error("Invalid email or password");
+          }
+          throw new Error(error?.message || "Authentication failed. Please try again.");
         }
       },
     }),

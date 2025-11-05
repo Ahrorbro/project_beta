@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prismaQuery as prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { InviteLandingPage } from "@/components/tenant/InviteLandingPage";
 
