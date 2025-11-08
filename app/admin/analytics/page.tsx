@@ -5,6 +5,8 @@ import { prismaQuery } from "@/lib/prisma";
 import { TrendingUp, Users, Building2, CreditCard, DollarSign } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminAnalyticsPage() {
   await requireRole("SUPER_ADMIN");
 
