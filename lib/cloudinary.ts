@@ -1,11 +1,34 @@
 import { v2 as cloudinary } from 'cloudinary';
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
+// Validate Cloudinary environment variables
+function validateCloudinaryConfig() {
+  const required = [
+    'CLOUDINARY_CLOUD_NAME',
+    'CLOUDINARY_API_KEY',
+    'CLOUDINARY_API_SECRET'
+  ];
+  
+  const missing = required.filter(key => !process.env[key]);
+  
+  if (missing.length > 0) {
+    console.warn(`⚠️  Missing Cloudinary environment variables: ${missing.join(', ')}`);
+    console.warn('File uploads will fail until these are configured.');
+    return false;
+  }
+  
+  return true;
+}
+
+// Configure Cloudinary (only if env vars are present)
+const isCloudinaryConfigured = validateCloudinaryConfig();
+
+if (isCloudinaryConfigured) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME!,
+    api_key: process.env.CLOUDINARY_API_KEY!,
+    api_secret: process.env.CLOUDINARY_API_SECRET!,
+  });
+}
 
 /**
  * Upload a file to Cloudinary
@@ -19,6 +42,10 @@ export async function uploadToCloudinary(
   folder: string,
   publicId?: string
 ): Promise<string> {
+  if (!isCloudinaryConfigured) {
+    throw new Error('Cloudinary is not configured. Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET environment variables.');
+  }
+
   return new Promise((resolve, reject) => {
     const uploadOptions: {
       folder: string;
@@ -61,6 +88,11 @@ export async function uploadToCloudinary(
  * @returns Promise<boolean> - True if deleted successfully
  */
 export async function deleteFromCloudinary(url: string): Promise<boolean> {
+  if (!isCloudinaryConfigured) {
+    console.error('Cloudinary is not configured. Cannot delete file.');
+    return false;
+  }
+
   try {
     // Extract public_id from Cloudinary URL
     // URL format: https://res.cloudinary.com/{cloud_name}/{resource_type}/upload/v{version}/{public_id}.{format}
