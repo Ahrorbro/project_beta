@@ -24,9 +24,10 @@ const createPrismaClient = () => {
         log: process.env.NODE_ENV === "development" ? ["query", "error", "warn"] : ["error"],
       });
       return client.$extends(withAccelerate());
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to create Prisma Accelerate client:', error);
-      throw new Error(`Prisma Client initialization failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Prisma Client initialization failed: ${message}`);
     }
   } else {
     // Regular client for local development
@@ -40,9 +41,10 @@ const createPrismaClient = () => {
         },
       });
       return client;
-    } catch (error: any) {
+    } catch (error) {
       console.error('Failed to create Prisma client:', error);
-      throw new Error(`Prisma Client initialization failed: ${error.message}`);
+      const message = error instanceof Error ? error.message : 'Unknown error';
+      throw new Error(`Prisma Client initialization failed: ${message}`);
     }
   }
 }

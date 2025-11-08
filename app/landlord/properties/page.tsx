@@ -12,8 +12,18 @@ export default async function PropertiesPage() {
 
   const properties = await prisma.property.findMany({
     where: { landlordId: session.user.id },
-    include: {
-      units: true,
+    select: {
+      id: true,
+      address: true,
+      location: true,
+      propertyType: true,
+      units: {
+        select: {
+          id: true,
+          isOccupied: true,
+          rentAmount: true,
+        },
+      },
       _count: {
         select: {
           units: true,
@@ -66,6 +76,12 @@ export default async function PropertiesPage() {
                         </div>
                         <div>
                           <h3 className="font-semibold text-white mb-1">{property.address}</h3>
+                          {property.location && (
+                            <p className="text-sm text-white/70 flex items-center gap-1">
+                              <MapPin className="w-3 h-3" />
+                              {property.location}
+                            </p>
+                          )}
                           <p className="text-sm text-white/60 capitalize">{property.propertyType}</p>
                         </div>
                       </div>

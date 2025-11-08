@@ -61,13 +61,13 @@ export function CreateMaintenanceRequestForm() {
         return;
       }
 
-      // Upload photos first
+      // Upload photos first using unified upload endpoint
       const photoUrls: string[] = [];
       for (const photo of formData.photos) {
         const formDataUpload = new FormData();
         formDataUpload.append("file", photo);
 
-        const uploadResponse = await fetch("/api/v1/maintenance/upload-photo", {
+        const uploadResponse = await fetch("/api/upload?folder=maintenance", {
           method: "POST",
           body: formDataUpload,
         });
@@ -77,7 +77,7 @@ export function CreateMaintenanceRequestForm() {
         }
 
         const uploadData = await uploadResponse.json();
-        photoUrls.push(uploadData.url);
+        photoUrls.push(uploadData.secure_url || uploadData.url);
       }
 
       // Create maintenance request

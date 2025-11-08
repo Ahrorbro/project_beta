@@ -8,10 +8,10 @@ import { GlassInput } from "@/components/ui/GlassInput";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
 import toast from "react-hot-toast";
 import { z } from "zod";
-import Link from "next/link";
 
 const propertySchema = z.object({
   address: z.string().min(1, "Address is required"),
+  location: z.string().optional(),
   propertyType: z.enum(["single", "multi"], {
     required_error: "Property type is required",
   }),
@@ -23,6 +23,7 @@ export function CreatePropertyForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     address: "",
+    location: "",
     propertyType: "single" as "single" | "multi",
     description: "",
   });
@@ -79,6 +80,15 @@ export function CreatePropertyForm() {
           disabled={isLoading}
           required
           placeholder="Enter property address"
+        />
+
+        <GlassInput
+          label="Location/City/Area"
+          value={formData.location}
+          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+          error={errors.location}
+          disabled={isLoading}
+          placeholder="Enter location, city, or area (e.g., Dar es Salaam, Kinondoni)"
         />
 
         <div className="w-full">

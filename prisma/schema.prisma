@@ -73,24 +73,35 @@ model User {
   maintenanceRequests   MaintenanceRequest[]
   leaseAgreements       LeaseAgreement[]
   auditLogs             AuditLog[]
+  announcementsSent     Announcement[]           @relation("LandlordAnnouncements")
+  announcementsReceived AnnouncementRecipient[] @relation("TenantAnnouncements")
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  @@index([role])
 }
 
 model Property {
   id          String   @id @default(cuid())
   address     String
+  location    String?  // Location/City/Area
+  latitude    Float?   // Google Maps latitude
+  longitude   Float?   // Google Maps longitude
   propertyType String // "single" or "multi"
   description String?
+  photos      String[] // Array of photo URLs
   landlordId  String
   
   // Relationships
   landlord    User   @relation("LandlordProperties", fields: [landlordId], references: [id])
   units       Unit[]
+  announcements Announcement[]
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  @@index([landlordId])
 }
 
 model Unit {
@@ -113,6 +124,9 @@ model Unit {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  @@index([propertyId])
+  @@index([isOccupied])
 }
 
 // Join table for many-to-many relationship between Unit and Tenant
@@ -177,6 +191,11 @@ model Payment {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  @@index([unitId])
+  @@index([tenantId])
+  @@index([status])
+  @@index([dueDate])
 }
 
 model MaintenanceRequest {
@@ -197,6 +216,10 @@ model MaintenanceRequest {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   resolvedAt  DateTime?
+  
+  @@index([unitId])
+  @@index([tenantId])
+  @@index([status])
 }
 
 model LeaseAgreement {
@@ -213,6 +236,9 @@ model LeaseAgreement {
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  
+  @@index([unitId])
+  @@index([tenantId])
 }
 
 model AuditLog {
@@ -229,5 +255,45 @@ model AuditLog {
   user            User          @relation(fields: [userId], references: [id])
   
   createdAt   DateTime @default(now())
+}
+
+model Announcement {
+  id          String   @id @default(cuid())
+  landlordId  String
+  propertyId  String?  // null = all properties
+  title       String
+  message     String
+  targetType  String   // "ALL_TENANTS" | "SPECIFIC_TENANTS" | "PROPERTY_TENANTS"
+  tenantIds   String[] // Array of tenant IDs if targetType is SPECIFIC_TENANTS
+  
+  // Relationships
+  landlord    User     @relation("LandlordAnnouncements", fields: [landlordId], references: [id])
+  property    Property? @relation(fields: [propertyId], references: [id])
+  recipients  AnnouncementRecipient[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  
+  @@index([landlordId])
+  @@index([propertyId])
+}
+
+// Track which tenants received which announcements
+model AnnouncementRecipient {
+  id             String       @id @default(cuid())
+  announcementId String
+  tenantId       String
+  isRead         Boolean      @default(false)
+  readAt         DateTime?
+  
+  // Relationships
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  tenant         User         @relation("TenantAnnouncements", fields: [tenantId], references: [id], onDelete: Cascade)
+  
+  createdAt      DateTime     @default(now())
+  
+  @@unique([announcementId, tenantId])
+  @@index([tenantId])
+  @@index([announcementId])
 }
 

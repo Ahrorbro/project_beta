@@ -51,39 +51,8 @@ export default function LoginPage() {
       if (result?.ok) {
         toast.success("Login successful!");
         
-        // Wait for session to be established
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-        // Fetch session to get user role
-        try {
-          const sessionRes = await fetch("/api/auth/session", {
-            cache: "no-store",
-            headers: {
-              "Cache-Control": "no-cache",
-            },
-          });
-          
-          if (sessionRes.ok) {
-            const sessionData = await sessionRes.json();
-            
-            if (sessionData?.user?.role === "SUPER_ADMIN") {
-              router.push("/admin/dashboard");
-            } else if (sessionData?.user?.role === "LANDLORD") {
-              router.push("/landlord/dashboard");
-            } else if (sessionData?.user?.role === "TENANT") {
-              router.push("/tenant/dashboard");
-            } else {
-              router.push("/");
-            }
-            router.refresh();
-          } else {
-            // Fallback: let the useEffect handle redirect based on session
-            router.refresh();
-          }
-        } catch (sessionError) {
-          // Fallback: refresh and let useEffect handle redirect
-          router.refresh();
-        }
+        // Refresh to get updated session, useEffect will handle redirect
+        router.refresh();
       } else {
         toast.error("Login failed. Please check your credentials.");
       }

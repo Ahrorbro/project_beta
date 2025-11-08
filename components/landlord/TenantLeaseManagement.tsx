@@ -40,18 +40,35 @@ export function TenantLeaseManagement({ tenant }: TenantLeaseManagementProps) {
     setIsUploading(true);
 
     try {
+      // Upload file to Cloudinary using unified endpoint
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("unitId", tenant.tenantUnits[0]?.unit.id || "");
-      formData.append("tenantId", tenant.id);
 
-      const response = await fetch("/api/v1/landlords/leases/upload", {
+      const uploadResponse = await fetch("/api/upload?folder=leases", {
         method: "POST",
         body: formData,
       });
 
+      if (!uploadResponse.ok) {
+        throw new Error("Failed to upload file");
+      }
+
+      const uploadData = await uploadResponse.json();
+      const documentUrl = uploadData.secure_url || uploadData.url;
+
+      // Create lease agreement with the Cloudinary URL
+      const response = await fetch("/api/v1/landlords/leases/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          documentUrl,
+          unitId: tenant.tenantUnits[0]?.unit.id || "",
+          tenantId: tenant.id,
+        }),
+      });
+
       if (!response.ok) {
-        throw new Error("Failed to upload lease");
+        throw new Error("Failed to create lease agreement");
       }
 
       toast.success("Lease agreement uploaded successfully!");

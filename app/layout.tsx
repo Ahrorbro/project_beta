@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
@@ -9,6 +9,12 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Rentify - Property Management Platform",
   description: "Streamline your rental property management in Tanzania",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
 };
 
 export default function RootLayout({
@@ -24,7 +30,8 @@ export default function RootLayout({
             {children}
           </div>
           <Toaster
-            position="top-right"
+            position="top-center"
+            containerClassName="!top-4"
             toastOptions={{
               duration: 4000,
               style: {
@@ -32,6 +39,7 @@ export default function RootLayout({
                 backdropFilter: "blur(10px)",
                 border: "1px solid rgba(255, 255, 255, 0.2)",
                 color: "#fff",
+                maxWidth: "90vw",
               },
             }}
           />

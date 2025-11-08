@@ -9,17 +9,27 @@ import Link from "next/link";
 export default async function TenantDashboard() {
   const session = await requireRole("TENANT");
 
-  // Get tenant with unit and related data
+  // Get tenant with unit and related data - optimized with select
   const tenant = (await prisma.user.findUnique({
     where: { id: session.user.id },
-    include: {
+    select: {
+      id: true,
+      email: true,
+      name: true,
       tenantUnits: {
-        include: {
+        select: {
           unit: {
-            include: {
+            select: {
+              id: true,
+              unitNumber: true,
+              rentAmount: true,
+              floor: true,
+              leaseStartDate: true,
+              leaseEndDate: true,
               property: {
                 select: {
                   address: true,
+                  location: true,
                 },
               },
             },
@@ -28,12 +38,25 @@ export default async function TenantDashboard() {
         orderBy: {
           createdAt: "asc",
         },
+        take: 10, // Limit to prevent excessive data
       },
       payments: {
+        select: {
+          id: true,
+          amount: true,
+          dueDate: true,
+          status: true,
+        },
         orderBy: { dueDate: "asc" },
         take: 3,
       },
       maintenanceRequests: {
+        select: {
+          id: true,
+          title: true,
+          status: true,
+          createdAt: true,
+        },
         where: {
           status: { in: ["SUBMITTED", "IN_PROGRESS"] },
         },
@@ -41,6 +64,11 @@ export default async function TenantDashboard() {
         take: 3,
       },
       leaseAgreements: {
+        select: {
+          id: true,
+          startDate: true,
+          endDate: true,
+        },
         orderBy: { createdAt: "desc" },
         take: 1,
       },
@@ -59,6 +87,7 @@ export default async function TenantDashboard() {
         leaseEndDate: Date | null;
         property: {
           address: string;
+          location: string | null;
         };
       };
     }>;
@@ -124,7 +153,14 @@ export default async function TenantDashboard() {
               </h2>
               <p className="text-white/60">
                 {primaryUnit ? (
-                  <>Unit {primaryUnit.unitNumber}{primaryUnit.floor && ` (Floor ${primaryUnit.floor})`}</>
+                  <>
+                    {primaryUnit.property.location && (
+                      <span className="block text-white/80 mb-1">
+                        📍 {primaryUnit.property.location}
+                      </span>
+                    )}
+                    Unit {primaryUnit.unitNumber}{primaryUnit.floor && ` (Floor ${primaryUnit.floor})`}
+                  </>
                 ) : (
                   "Please contact your landlord"
                 )}

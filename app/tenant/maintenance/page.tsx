@@ -20,6 +20,7 @@ export default async function TenantMaintenancePage() {
               property: {
                 select: {
                   address: true,
+                  location: true,
                 },
               },
             },

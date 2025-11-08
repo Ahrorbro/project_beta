@@ -8,6 +8,7 @@ import { Users, Mail, Phone, Building2, CreditCard, Wrench, FileText } from "luc
 import { formatDate, formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { TenantLeaseManagement } from "@/components/landlord/TenantLeaseManagement";
+import { RemoveTenantButton } from "@/components/landlord/RemoveTenantButton";
 
 interface TenantDetailPageProps {
   params: {
@@ -41,6 +42,7 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
                 select: {
                   id: true,
                   address: true,
+                  location: true,
                 },
               },
             },
@@ -116,11 +118,27 @@ export default async function TenantDetailPage({ params }: TenantDetailPageProps
                 <div className="space-y-2">
                   <p className="text-sm text-white/60">Unit(s):</p>
                   {tenant.tenantUnits.map((ut) => (
-                    <div key={ut.id} className="flex items-center gap-3 text-sm">
-                      <Building2 className="w-4 h-4 text-white/60" />
-                      <span className="text-white/80">
-                        {ut.unit.property.address} - Unit {ut.unit.unitNumber}
-                      </span>
+                    <div key={ut.id} className="p-3 rounded-lg bg-white/5 border border-white/10">
+                      <div className="space-y-1 mb-2">
+                        <div className="flex items-center gap-3 text-sm">
+                          <Building2 className="w-4 h-4 text-white/60" />
+                          <span className="text-white/80">
+                            {ut.unit.property.address} - Unit {ut.unit.unitNumber}
+                          </span>
+                        </div>
+                        {ut.unit.property.location && (
+                          <p className="text-xs text-white/60 ml-7">
+                            📍 {ut.unit.property.location}
+                          </p>
+                        )}
+                      </div>
+                      <RemoveTenantButton
+                        propertyId={ut.unit.property.id}
+                        unitId={ut.unit.id}
+                        tenantId={tenant.id}
+                        tenantName={tenant.name || tenant.email}
+                        unitNumber={ut.unit.unitNumber}
+                      />
                     </div>
                   ))}
                 </div>

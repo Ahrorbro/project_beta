@@ -81,21 +81,24 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             role: user.role,
           };
-        } catch (error: any) {
+        } catch (error) {
           console.error("Auth error:", error);
           // Provide more specific error messages
-          if (error?.code === "P1001" || error?.message?.includes("connect") || error?.message?.includes("timeout")) {
+          const errorObj = error as { code?: string; message?: string };
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          
+          if (errorObj?.code === "P1001" || errorMessage.includes("connect") || errorMessage.includes("timeout")) {
             console.error("Database connection error details:", {
-              code: error?.code,
-              message: error?.message,
+              code: errorObj?.code,
+              message: errorMessage,
               DATABASE_URL: process.env.DATABASE_URL ? "Set" : "Missing"
             });
             throw new Error("Database connection failed. Please check your database configuration.");
           }
-          if (error?.code === "P2025") {
+          if (errorObj?.code === "P2025") {
             throw new Error("Invalid email or password");
           }
-          throw new Error(error?.message || "Authentication failed. Please try again.");
+          throw new Error(errorMessage || "Authentication failed. Please try again.");
         }
       },
     }),

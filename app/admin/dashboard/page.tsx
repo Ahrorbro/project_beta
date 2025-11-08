@@ -4,6 +4,7 @@ import { GlassCard } from "@/components/ui/GlassCard";
 import { prismaQuery } from "@/lib/prisma";
 import { Users, Building2, CreditCard, TrendingUp } from "lucide-react";
 import { BackfillUnitTenantsButton } from "@/components/admin/BackfillUnitTenantsButton";
+import Link from "next/link";
 
 export default async function AdminDashboard() {
   await requireRole("SUPER_ADMIN");
@@ -27,24 +28,28 @@ export default async function AdminDashboard() {
       value: totalLandlords,
       icon: Users,
       color: "from-blue-500 to-cyan-500",
+      href: "/admin/landlords",
     },
     {
       label: "Total Tenants",
       value: totalTenants,
       icon: Users,
       color: "from-purple-500 to-pink-500",
+      href: "/admin/tenants",
     },
     {
       label: "Total Properties",
       value: totalProperties,
       icon: Building2,
       color: "from-green-500 to-emerald-500",
+      href: "/admin/properties",
     },
     {
       label: "Total Payments",
       value: totalPayments,
       icon: CreditCard,
       color: "from-orange-500 to-red-500",
+      href: "/admin/payments",
     },
   ];
 
@@ -58,24 +63,26 @@ export default async function AdminDashboard() {
           <p className="text-white/60">System-wide overview and statistics</p>
         </div>
 
-        {/* Stats Grid */}
+        {/* Stats Grid - Clickable Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {stats.map((stat: typeof stats[0]) => {
             const Icon = stat.icon;
             return (
-              <GlassCard key={stat.label} className="relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-10 blur-3xl" />
-                <div className="relative">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
-                      <Icon className="w-6 h-6 text-white" />
+              <Link key={stat.label} href={stat.href}>
+                <GlassCard className="relative overflow-hidden hover:scale-[1.02] transition-transform cursor-pointer">
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br opacity-10 blur-3xl" />
+                  <div className="relative">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${stat.color} flex items-center justify-center`}>
+                        <Icon className="w-6 h-6 text-white" />
+                      </div>
+                      <TrendingUp className="w-5 h-5 text-white/40" />
                     </div>
-                    <TrendingUp className="w-5 h-5 text-white/40" />
+                    <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
+                    <p className="text-sm text-white/60">{stat.label}</p>
                   </div>
-                  <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
-                  <p className="text-sm text-white/60">{stat.label}</p>
-                </div>
-              </GlassCard>
+                </GlassCard>
+              </Link>
             );
           })}
         </div>

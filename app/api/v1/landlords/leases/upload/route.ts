@@ -2,11 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prismaQuery as prisma } from "@/lib/prisma";
 import { createAuditLog } from "@/lib/audit";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
-import { randomBytes } from "crypto";
+import { uploadToCloudinary } from "@/lib/cloudinary";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs"; // Use Node.js runtime for Buffer support
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,12 +18,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const formData = await request.formData();
-    const file = formData.get("file") as File;
-    const unitId = formData.get("unitId") as string;
-    const tenantId = formData.get("tenantId") as string;
+    // Check if request is JSON (documentUrl) or FormData (file)
+    const contentType = request.headers.get("content-type") || "";
+    let documentUrl: string;
+    let unitId: string;
+    let tenantId: string;
 
-    if (!file || !unitId || !tenantId) {
+    if (contentType.includes("application/json")) {
+      // Client already uploaded to Cloudinary, just need to create lease
+      const body = await request.json();
+      documentUrl = body.documentUrl;
+      unitId = body.unitId;
+      tenantId = body.tenantId;
+    } else {
+      // Legacy: Upload file directly (for backward compatibility)
+      const formData = await request.formData();
+      const file = formData.get("file") as File;
+      unitId = formData.get("unitId") as string;
+      tenantId = formData.get("tenantId") as string;
+
+      if (!file || !unitId || !tenantId) {
+        return NextResponse.json(
+          { error: "Missing required fields" },
+          { status: 400 }
+        );
+      }
+
+      // Convert file to buffer
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+
+      // Upload to Cloudinary
+      documentUrl = await uploadToCloudinary(buffer, "leases");
+    }
+
+    if (!documentUrl || !unitId || !tenantId) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -47,20 +75,6 @@ export async function POST(request: NextRequest) {
         { status: 404 }
       );
     }
-
-    // Save file
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-
-    const uploadsDir = join(process.cwd(), "public", "uploads", "leases");
-    await mkdir(uploadsDir, { recursive: true });
-
-    const fileName = `${randomBytes(16).toString("hex")}-${file.name}`;
-    const filePath = join(uploadsDir, fileName);
-
-    await writeFile(filePath, buffer);
-
-    const documentUrl = `/uploads/leases/${fileName}`;
 
     // Create lease agreement
     const lease = await prisma.leaseAgreement.create({

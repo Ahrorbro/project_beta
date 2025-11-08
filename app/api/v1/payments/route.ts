@@ -28,41 +28,33 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = paymentSchema.parse(body);
 
-    // Verify unit belongs to landlord and get first tenant
-    const unit = await prisma.unit.findFirst({
+    // Verify unit belongs to landlord and get first tenant - optimized query
+    const unitTenant = await prisma.unitTenant.findFirst({
       where: {
-        id: validated.unitId,
-        property: {
-          landlordId: session.user.id,
+        unit: {
+          id: validated.unitId,
+          property: {
+            landlordId: session.user.id,
+          },
+          isOccupied: true,
         },
-        isOccupied: true,
       },
-      include: {
-        tenants: {
-          include: {
-            tenant: {
-              select: {
-                id: true,
-              },
-            },
-          },
-          take: 1,
-          orderBy: {
-            createdAt: "asc",
-          },
-        },
+      select: {
+        tenantId: true,
+      },
+      orderBy: {
+        createdAt: "asc",
       },
     });
 
-    if (!unit || !unit.tenants || unit.tenants.length === 0) {
+    if (!unitTenant) {
       return NextResponse.json(
         { error: "Unit not found or not occupied" },
         { status: 404 }
       );
     }
 
-    // Get the first tenant from the unit
-    const tenantId = unit.tenants[0].tenant.id;
+    const tenantId = unitTenant.tenantId;
 
     // Create payment
     const payment = await prisma.payment.create({
@@ -76,8 +68,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Create audit log
-    await createAuditLog({
+    // Create audit log asynchronously (non-blocking)
+    createAuditLog({
       userId: session.user.id,
       action: "CREATE_PAYMENT",
       entityType: "Payment",
@@ -88,6 +80,8 @@ export async function POST(request: NextRequest) {
       },
       ipAddress: request.headers.get("x-forwarded-for") || undefined,
       userAgent: request.headers.get("user-agent") || undefined,
+    }).catch(() => {
+      // Audit log failures shouldn't break the flow
     });
 
     return NextResponse.json(

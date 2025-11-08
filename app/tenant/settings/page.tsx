@@ -19,6 +19,7 @@ export default async function TenantSettingsPage() {
               property: {
                 select: {
                   address: true,
+                  location: true,
                 },
               },
             },
@@ -71,9 +72,16 @@ export default async function TenantSettingsPage() {
                   <p className="text-sm text-white/60 mb-2">Assigned Unit{tenant.tenantUnits.length > 1 ? "s" : ""}</p>
                   <div className="space-y-2">
                     {tenant.tenantUnits.map((ut) => (
-                      <p key={ut.id} className="text-white font-medium">
-                        {ut.unit.property.address} - Unit {ut.unit.unitNumber}
-                      </p>
+                      <div key={ut.id} className="mb-2">
+                        <p className="text-white font-medium">
+                          {ut.unit.property.address} - Unit {ut.unit.unitNumber}
+                        </p>
+                        {ut.unit.property.location && (
+                          <p className="text-sm text-white/60 ml-4">
+                            📍 {ut.unit.property.location}
+                          </p>
+                        )}
+                      </div>
                     ))}
                   </div>
                 </div>

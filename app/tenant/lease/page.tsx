@@ -2,9 +2,8 @@ import { requireRole } from "@/lib/middleware";
 import { TenantLayout } from "@/components/layouts/TenantLayout";
 import { GlassCard } from "@/components/ui/GlassCard";
 import { prismaQuery as prisma } from "@/lib/prisma";
-import { FileText, Download, Calendar } from "lucide-react";
+import { FileText, Download, Calendar, MapPin } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import Link from "next/link";
 
 export default async function TenantLeasePage() {
   const session = await requireRole("TENANT");
@@ -19,6 +18,7 @@ export default async function TenantLeasePage() {
               property: {
                 select: {
                   address: true,
+                  location: true,
                 },
               },
             },
@@ -76,6 +76,12 @@ export default async function TenantLeasePage() {
               <div className="p-4 rounded-lg bg-white/5">
                 <p className="text-sm text-white/60 mb-1">Property Address</p>
                 <p className="font-semibold text-white">{primaryUnit.property.address}</p>
+                {primaryUnit.property.location && (
+                  <p className="text-sm text-white/60 mt-1 flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    {primaryUnit.property.location}
+                  </p>
+                )}
               </div>
               <div className="p-4 rounded-lg bg-white/5">
                 <p className="text-sm text-white/60 mb-1">Unit Number</p>

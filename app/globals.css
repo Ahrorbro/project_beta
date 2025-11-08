@@ -34,6 +34,15 @@
     @apply bg-slate-900 text-white;
     background-attachment: fixed;
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Mobile optimizations */
+  @media (max-width: 640px) {
+    body {
+      background-attachment: scroll;
+    }
   }
 }
 
@@ -75,6 +84,33 @@
     @apply glass rounded-lg px-4 py-3 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-300;
   }
 
+  /* Ensure placeholder only shows when input is empty */
+  .glass-input:not(:placeholder-shown) {
+    @apply text-white;
+  }
+
+  .glass-input::placeholder {
+    @apply text-white/60;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+    padding-left: 0;
+  }
+
+  .glass-input:focus::placeholder {
+    opacity: 0.3;
+  }
+
+  .glass-input:not(:placeholder-shown)::placeholder,
+  .glass-input[data-has-value="true"]::placeholder {
+    opacity: 0 !important;
+  }
+
+  /* Ensure input text is visible when typing */
+  .glass-input:focus,
+  .glass-input:not(:placeholder-shown) {
+    @apply text-white;
+  }
+
   /* Gradient Backgrounds */
   .gradient-primary {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -109,6 +145,36 @@
   /* Smooth Transitions */
   .transition-smooth {
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* Mobile Responsive Utilities */
+  @media (max-width: 640px) {
+    .glass-card {
+      @apply p-4;
+    }
+
+    .glass-button {
+      @apply px-4 py-2 text-sm;
+    }
+
+    .glass-input {
+      @apply px-3 py-2 text-base; /* Prevents zoom on iOS */
+    }
+  }
+
+  /* Tablet Responsive Utilities */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .glass-card {
+      @apply p-5;
+    }
+  }
+
+  /* Touch-friendly buttons on mobile */
+  @media (max-width: 768px) {
+    button, a {
+      min-height: 44px; /* iOS recommended touch target */
+      min-width: 44px;
+    }
   }
 }
 

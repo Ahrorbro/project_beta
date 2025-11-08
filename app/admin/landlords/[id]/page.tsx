@@ -80,9 +80,19 @@ export default async function LandlordDetailPage({ params }: LandlordDetailPageP
           },
         },
       },
-      include: {
+      select: {
+        id: true,
+        amount: true,
+        dueDate: true,
+        paidDate: true,
+        status: true,
+        editedAt: true,
+        createdAt: true,
         unit: {
-          include: {
+          select: {
+            id: true,
+            unitNumber: true,
+            rentAmount: true,
             property: {
               select: {
                 address: true,
@@ -98,7 +108,7 @@ export default async function LandlordDetailPage({ params }: LandlordDetailPageP
         },
       },
       orderBy: { dueDate: "desc" },
-      take: 10, // Show last 10 payments
+      take: 10,
     }),
   ]);
 

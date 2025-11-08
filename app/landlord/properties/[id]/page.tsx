@@ -8,6 +8,8 @@ import { Building2, MapPin, Plus, Users, CreditCard, Wrench } from "lucide-react
 import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { UnitInviteButton } from "@/components/landlord/UnitInviteButton";
+import { DeletePropertyButton } from "@/components/landlord/DeletePropertyButton";
+import { PropertyPhotoUpload } from "@/components/landlord/PropertyPhotoUpload";
 
 interface PropertyDetailPageProps {
   params: {
@@ -18,71 +20,71 @@ interface PropertyDetailPageProps {
 export default async function PropertyDetailPage({ params }: PropertyDetailPageProps) {
   const session = await requireRole("LANDLORD");
 
-  const property = (await prisma.property.findFirst({
-    where: {
-      id: params.id,
-      landlordId: session.user.id,
-    },
-    include: {
-      units: {
-        include: {
-          tenants: {
-            include: {
-              tenant: {
-                select: {
-                  id: true,
-                  name: true,
-                  email: true,
+  try {
+    const property = (await prisma.property.findFirst({
+      where: {
+        id: params.id,
+        landlordId: session.user.id,
+      },
+      include: {
+        units: {
+          include: {
+            tenants: {
+              include: {
+                tenant: {
+                  select: {
+                    id: true,
+                    name: true,
+                    email: true,
+                  },
                 },
               },
             },
-            orderBy: {
-              createdAt: "asc",
+            _count: {
+              select: {
+                payments: true,
+                maintenanceRequests: true,
+              },
             },
           },
-          _count: {
-            select: {
-              payments: true,
-              maintenanceRequests: true,
-            },
-          },
+          orderBy: [
+            { floor: "asc" },
+            { unitNumber: "asc" },
+          ],
         },
-        orderBy: [
-          { floor: "asc" },
-          { unitNumber: "asc" },
-        ],
       },
-    },
-  })) as unknown as {
-    id: string;
-    address: string;
-    propertyType: string;
-    description: string | null;
-    units: Array<{
+    })) as unknown as {
       id: string;
-      unitNumber: string;
-      rentAmount: number;
-      isOccupied: boolean;
-      floor: number | null;
-      invitationToken: string;
-      tenants: Array<{
+      address: string;
+      location: string | null;
+      propertyType: string;
+      description: string | null;
+      photos: string[];
+      units: Array<{
         id: string;
-        tenant: {
+        unitNumber: string;
+        rentAmount: number;
+        isOccupied: boolean;
+        floor: number | null;
+        invitationToken: string;
+        tenants: Array<{
           id: string;
-          name: string | null;
-          email: string;
+          tenant: {
+            id: string;
+            name: string | null;
+            email: string;
+          };
+        }>;
+        _count: {
+          payments: number;
+          maintenanceRequests: number;
         };
       }>;
-      _count: {
-        payments: number;
-        maintenanceRequests: number;
-      };
-    }>;
-  } | null;
+    } | null;
 
-  if (!property) {
-    notFound();
-  }
+    if (!property) {
+      notFound();
+    }
 
   const baseUrl = process.env.NEXTAUTH_URL || "http://localhost:3000";
   const occupiedUnits = property.units.filter((u: typeof property.units[0]) => u.isOccupied).length;
@@ -102,6 +104,12 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
             <h1 className="text-4xl font-bold mb-2 text-white">
               {property.address}
             </h1>
+            {property.location && (
+              <p className="text-white/80 flex items-center gap-2 mb-1">
+                <MapPin className="w-5 h-5" />
+                {property.location}
+              </p>
+            )}
             <p className="text-white/60 capitalize">{property.propertyType} property</p>
           </div>
           <Link href={`/landlord/properties/${property.id}/units/new`}>
@@ -121,6 +129,12 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               </div>
               <div>
                 <h2 className="text-2xl font-semibold text-white">{property.address}</h2>
+                {property.location && (
+                  <p className="text-white/80 flex items-center gap-1">
+                    <MapPin className="w-4 h-4" />
+                    {property.location}
+                  </p>
+                )}
                 <p className="text-white/60 capitalize">{property.propertyType} property</p>
               </div>
             </div>
@@ -167,9 +181,24 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                   Edit Property
                 </GlassButton>
               </Link>
+              <div className="pt-3 border-t border-white/10">
+                <DeletePropertyButton
+                  propertyId={property.id}
+                  propertyAddress={property.address}
+                />
+              </div>
             </div>
           </GlassCard>
         </div>
+
+        {/* Property Photos */}
+        <GlassCard>
+          <h2 className="text-2xl font-semibold mb-6 text-white">Property Photos</h2>
+          <PropertyPhotoUpload 
+            propertyId={property.id}
+            existingPhotos={property.photos || []}
+          />
+        </GlassCard>
 
         {/* Units List */}
         <GlassCard>
@@ -275,5 +304,9 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
       </div>
     </LandlordLayout>
   );
+  } catch (error) {
+    console.error("Error loading property:", error);
+    throw error; // Let Next.js error boundary handle it
+  }
 }
 

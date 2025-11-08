@@ -8,6 +8,7 @@ import { Building2, Link as LinkIcon, Copy, Users, CreditCard, Wrench } from "lu
 import { formatCurrency, formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { UnitInvitationLink } from "@/components/landlord/UnitInvitationLink";
+import { RemoveTenantButton } from "@/components/landlord/RemoveTenantButton";
 
 interface UnitDetailPageProps {
   params: {
@@ -142,13 +143,20 @@ export default async function UnitDetailPage({ params }: UnitDetailPageProps) {
                       {unitTenant.tenant.phone && (
                         <p className="text-sm text-white/60">{unitTenant.tenant.phone}</p>
                       )}
-                      <div className="mt-2">
+                      <div className="mt-2 flex items-center gap-2">
                         <Link
                           href={`/landlord/tenants/${unitTenant.tenant.id}`}
                           className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
                         >
                           View Details →
                         </Link>
+                        <RemoveTenantButton
+                          propertyId={params.id}
+                          unitId={params.unitId}
+                          tenantId={unitTenant.tenant.id}
+                          tenantName={unitTenant.tenant.name || unitTenant.tenant.email}
+                          unitNumber={unit.unitNumber}
+                        />
                       </div>
                     </div>
                   ))}

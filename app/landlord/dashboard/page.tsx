@@ -11,11 +11,24 @@ import Link from "next/link";
 export default async function LandlordDashboard() {
   const session = await requireRole("LANDLORD");
 
-  // Check if profile is complete and get subscription
+  // Check if profile is complete and get subscription - optimized with select
   const landlord = await prisma.user.findUnique({
     where: { id: session.user.id },
-    include: {
-      subscription: true,
+    select: {
+      id: true,
+      name: true,
+      landlordProfileComplete: true,
+      subscription: {
+        select: {
+          id: true,
+          plan: true,
+          status: true,
+          trialStartDate: true,
+          trialEndDate: true,
+          membershipPaid: true,
+          membershipPaymentDate: true,
+        },
+      },
     },
   });
 

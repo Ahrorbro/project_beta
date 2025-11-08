@@ -25,11 +25,12 @@ export default async function MaintenanceRequestDetailPage({ params }: Maintenan
     include: {
       unit: {
         include: {
-          property: {
-            select: {
-              address: true,
-            },
-          },
+              property: {
+                select: {
+                  address: true,
+                  location: true,
+                },
+              },
         },
       },
     },

@@ -26,7 +26,7 @@ export const GlassInput = forwardRef<HTMLInputElement, GlassInputProps>(
         )}
         <div className="relative">
           {icon && (
-            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60 z-10">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-white/60 z-10 pointer-events-none">
               {icon}
             </div>
           )}
@@ -40,14 +40,34 @@ export const GlassInput = forwardRef<HTMLInputElement, GlassInputProps>(
             type={inputType}
             className={cn(
               "glass-input w-full",
-              icon && "pl-10",
-              (isDate && !icon) && "pl-10",
+              icon && "pl-12",
+              (isDate && !icon) && "pl-12",
               (isPassword && showPasswordToggle) && "pr-10",
               isDate && "pr-10",
               error && "border-red-500 focus:ring-red-500",
               className
             )}
             {...props}
+            onChange={(e) => {
+              // Ensure placeholder hides when typing
+              const target = e.target as HTMLInputElement;
+              if (target.value) {
+                target.setAttribute('data-has-value', 'true');
+              } else {
+                target.removeAttribute('data-has-value');
+              }
+              props.onChange?.(e);
+            }}
+            onInput={(e) => {
+              // Ensure placeholder hides when typing
+              const target = e.target as HTMLInputElement;
+              if (target.value) {
+                target.setAttribute('data-has-value', 'true');
+              } else {
+                target.removeAttribute('data-has-value');
+              }
+              props.onInput?.(e);
+            }}
           />
           {isPassword && showPasswordToggle && (
             <button

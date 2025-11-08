@@ -26,6 +26,7 @@ export default async function TenantPaymentsPage({ searchParams }: PaymentsPageP
               property: {
                 select: {
                   address: true,
+                  location: true,
                 },
               },
             },
@@ -46,6 +47,7 @@ export default async function TenantPaymentsPage({ searchParams }: PaymentsPageP
       unit: {
         property: {
           address: string;
+          location: string | null;
         };
       };
     }>;

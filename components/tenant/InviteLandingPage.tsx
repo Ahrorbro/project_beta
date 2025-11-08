@@ -176,14 +176,18 @@ export function InviteLandingPage({ unit, token }: InviteLandingPageProps) {
       <div className="w-full max-w-md">
         <GlassCard>
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-lg bg-white/10 border border-white/20 flex items-center justify-center mx-auto mb-4">
-              <Building2 className="w-8 h-8 text-white" />
+            {/* Rentify Logo */}
+            <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Building2 className="w-10 h-10 text-white" />
             </div>
-            <h1 className="text-3xl font-bold mb-2 text-white">
-              Welcome to Rentify
+            <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              Rentify
             </h1>
+            <h2 className="text-xl font-semibold mb-3 text-white">
+              Welcome to Rentify
+            </h2>
             {unit?.property?.address && (
-              <p className="text-white/60 mb-2">{unit.property.address}</p>
+              <p className="text-white/80 mb-1 font-medium">{unit.property.address}</p>
             )}
             {unit?.unitNumber && (
               <p className="text-sm text-white/60">Unit {unit.unitNumber}</p>
@@ -228,6 +232,7 @@ export function InviteLandingPage({ unit, token }: InviteLandingPageProps) {
                 error={errors.name}
                 disabled={isLoading}
                 required
+                placeholder="Enter your full name"
                 icon={<User className="w-4 h-4" />}
               />
 
@@ -239,6 +244,7 @@ export function InviteLandingPage({ unit, token }: InviteLandingPageProps) {
                 error={errors.email}
                 disabled={isLoading}
                 required
+                placeholder="Enter your email address"
                 icon={<Mail className="w-4 h-4" />}
               />
 
@@ -250,6 +256,7 @@ export function InviteLandingPage({ unit, token }: InviteLandingPageProps) {
                 error={errors.phone}
                 disabled={isLoading}
                 required
+                placeholder="Enter your phone number"
                 icon={<Phone className="w-4 h-4" />}
               />
 
@@ -261,6 +268,7 @@ export function InviteLandingPage({ unit, token }: InviteLandingPageProps) {
                 error={errors.password}
                 disabled={isLoading}
                 required
+                placeholder="Create a password (min. 6 characters)"
                 icon={<Lock className="w-4 h-4" />}
                 showPasswordToggle
               />
@@ -356,6 +364,7 @@ export function InviteLandingPage({ unit, token }: InviteLandingPageProps) {
                 error={errors.email}
                 disabled={isLoading}
                 required
+                placeholder="Enter your email address"
                 icon={<Mail className="w-4 h-4" />}
               />
 
@@ -367,6 +376,7 @@ export function InviteLandingPage({ unit, token }: InviteLandingPageProps) {
                 error={errors.password}
                 disabled={isLoading}
                 required
+                placeholder="Enter your password"
                 icon={<Lock className="w-4 h-4" />}
                 showPasswordToggle
               />

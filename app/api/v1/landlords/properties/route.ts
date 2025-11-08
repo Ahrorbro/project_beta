@@ -6,6 +6,7 @@ import { z } from "zod";
 
 const propertySchema = z.object({
   address: z.string().min(1),
+  location: z.string().optional(),
   propertyType: z.enum(["single", "multi"]),
   description: z.string().optional(),
 });
@@ -26,36 +27,37 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validated = propertySchema.parse(body);
 
-    // Check subscription limits for Basic plan
-    const subscription = await prisma.subscription.findUnique({
-      where: { userId: session.user.id },
-    });
-
-    if (subscription?.plan === "BASIC") {
-      const propertyCount = await prisma.property.count({
+    // Check subscription limits for Basic plan - optimize with parallel queries
+    const [subscription, propertyCount] = await Promise.all([
+      prisma.subscription.findUnique({
+        where: { userId: session.user.id },
+        select: { plan: true },
+      }),
+      prisma.property.count({
         where: { landlordId: session.user.id },
-      });
+      }),
+    ]);
 
-      if (propertyCount >= 5) {
-        return NextResponse.json(
-          { error: "Basic plan limit reached. Upgrade to Pro for unlimited properties." },
-          { status: 403 }
-        );
-      }
+    if (subscription?.plan === "BASIC" && propertyCount >= 5) {
+      return NextResponse.json(
+        { error: "Basic plan limit reached. Upgrade to Pro for unlimited properties." },
+        { status: 403 }
+      );
     }
 
     // Create property
     const property = await prisma.property.create({
       data: {
         address: validated.address,
+        location: validated.location,
         propertyType: validated.propertyType,
         description: validated.description,
         landlordId: session.user.id,
       },
     });
 
-    // Create audit log
-    await createAuditLog({
+    // Create audit log asynchronously (non-blocking)
+    createAuditLog({
       userId: session.user.id,
       action: "CREATE_PROPERTY",
       entityType: "Property",
@@ -63,6 +65,8 @@ export async function POST(request: NextRequest) {
       details: { address: property.address, propertyType: property.propertyType },
       ipAddress: request.headers.get("x-forwarded-for") || undefined,
       userAgent: request.headers.get("user-agent") || undefined,
+    }).catch(() => {
+      // Audit log failures shouldn't break the flow
     });
 
     return NextResponse.json(
@@ -98,8 +102,15 @@ export async function GET(request: NextRequest) {
 
     const properties = await prisma.property.findMany({
       where: { landlordId: session.user.id },
-      include: {
-        units: true,
+      select: {
+        id: true,
+        address: true,
+        location: true,
+        propertyType: true,
+        description: true,
+        photos: true,
+        createdAt: true,
+        updatedAt: true,
         _count: {
           select: {
             units: true,

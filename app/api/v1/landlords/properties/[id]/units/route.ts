@@ -32,12 +32,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Verify property belongs to landlord
+    // Verify property belongs to landlord (minimal query)
     const property = await prisma.property.findFirst({
       where: {
         id: params.id,
         landlordId: session.user.id,
       },
+      select: { id: true },
     });
 
     if (!property) {
@@ -67,8 +68,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       },
     });
 
-    // Create audit log
-    await createAuditLog({
+    // Create audit log asynchronously (non-blocking)
+    createAuditLog({
       userId: session.user.id,
       action: "CREATE_UNIT",
       entityType: "Unit",
@@ -79,6 +80,8 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       },
       ipAddress: request.headers.get("x-forwarded-for") || undefined,
       userAgent: request.headers.get("user-agent") || undefined,
+    }).catch(() => {
+      // Audit log failures shouldn't break the flow
     });
 
     return NextResponse.json(
@@ -112,12 +115,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Verify property belongs to landlord
+    // Verify property belongs to landlord (minimal query)
     const property = await prisma.property.findFirst({
       where: {
         id: params.id,
         landlordId: session.user.id,
       },
+      select: { id: true },
     });
 
     if (!property) {
@@ -129,9 +133,21 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const units = await prisma.unit.findMany({
       where: { propertyId: property.id },
-      include: {
+      select: {
+        id: true,
+        unitNumber: true,
+        floor: true,
+        rentAmount: true,
+        leaseStartDate: true,
+        leaseEndDate: true,
+        invitationToken: true,
+        isOccupied: true,
+        createdAt: true,
+        updatedAt: true,
         tenants: {
-          include: {
+          select: {
+            id: true,
+            createdAt: true,
             tenant: {
               select: {
                 id: true,

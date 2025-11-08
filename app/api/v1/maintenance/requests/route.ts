@@ -51,8 +51,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Create audit log
-    await createAuditLog({
+    // Create audit log asynchronously (non-blocking)
+    createAuditLog({
       userId: session.user.id,
       action: "CREATE_MAINTENANCE_REQUEST",
       entityType: "MaintenanceRequest",
@@ -60,6 +60,8 @@ export async function POST(request: NextRequest) {
       details: { title: validated.title },
       ipAddress: request.headers.get("x-forwarded-for") || undefined,
       userAgent: request.headers.get("user-agent") || undefined,
+    }).catch(() => {
+      // Audit log failures shouldn't break the flow
     });
 
     return NextResponse.json(
